@@ -1,0 +1,17 @@
+# 依赖
+node_modules/
+
+# 图库与状态（每个人自己的，不进仓库）
+library/
+state.json
+usage.json
+*.log
+marker-debug.log
+
+# 密钥
+*.key
+*token*.txt
+
+# 系统
+.DS_Store
+Thumbs.db
