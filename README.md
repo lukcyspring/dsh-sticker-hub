@@ -112,17 +112,20 @@ dsh plugin --profile desktop add dsh-sticker-hub
 
 ```yaml
 sources:
-  - id: nekowhale
+  - id: my-source
     repo: https://github.com/<owner>/<repo>
-    subdir: stickers
-    license: 见仓库 README
+    subdir: stickers        # 仓库里图片所在目录
+    license: 见仓库 README  # 会原样写进入库条目
 ```
 
 ```bash
 node bin/sticker-hub.mjs pull            # 全部拉
-node bin/sticker-hub.mjs pull nekowhale  # 只拉一个
+node bin/sticker-hub.mjs pull dsh-meme   # 只拉一个
 node bin/sticker-hub.mjs stats           # 看看有多少张
 ```
+
+`pull` 走 GitHub 的 tarball（`api.github.com/repos/<owner>/<repo>/tarball`），**不用装 git**；解包用系统自带的 `tar`。
+`subdir` 没填的条目不拉（图不在仓库里，比如 nekowhale 走自建镜像分发）。
 
 图片落在 `~/.dsh/sticker-hub/library/<id>/`，索引是同目录的 `index-all.md`。
 

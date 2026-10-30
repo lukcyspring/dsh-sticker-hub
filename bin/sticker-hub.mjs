@@ -8,7 +8,7 @@
  *
  * 用法：node bin/sticker-hub.mjs pull nekowhale --token <github token>
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, copyFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, copyFileSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, resolve, extname, basename } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -38,7 +38,7 @@ function readSources() {
   const out = [];
   let cur = null;
   for (const line of readFileSync(f, 'utf8').split('\n')) {
-    const m = /^\s*-\s+(id|repo|subdir|path|license|note|name):\s*(.+)$/.exec(line);
+    const m = /^\s*(?:-\s+)?(id|repo|subdir|path|license|note|name):\s*(.+)$/.exec(line);
     if (!m) continue;
     if (m[1] === 'id') { cur = {}; out.push(cur); }
     if (cur) cur[m[1]] = m[2].trim();
@@ -61,14 +61,28 @@ function listImages(dir) {
 
 async function pull(src) {
   const sources = readSources();
-  const todo = src ? sources.filter((s) => s.id === src) : sources.filter((s) => s.repo);
+  const todo = src ? sources.filter((s) => s.id === src) : sources.filter((s) => s.repo && s.subdir);
   if (todo.length === 0) { console.error(`没有这个来源：${src || '(空)'}`); process.exit(1); }
   for (const s of todo) {
     if (!s.repo) { console.log(`跳过 ${s.id}（本地目录，没有 repo）`); continue; }
-    const tmp = join(tmpdir(), `sticker-${s.id}-${Date.now()}`);
-    console.log(`→ clone ${s.repo}`);
-    execFileSync('git', ['clone', '--depth', '1', s.repo, tmp], { stdio: 'inherit' });
-    const from = s.subdir ? join(tmp, s.subdir) : tmp;
+    if (!s.subdir) { console.log(`跳过 ${s.id}（没填 subdir，图片不在仓库里）`); continue; }
+    const tmp = mkdtempSync(join(tmpdir(), `sticker-${s.id}-`));
+    // 不用 git clone：走 GitHub 的 tarball，免装 git，也不吃代理
+    const m = /github\.com[/:]([^/]+)\/([^/#?]+)/.exec(s.repo);
+    if (!m) { console.error(`跳过 ${s.id}：只支持 GitHub 仓库地址（${s.repo}）`); continue; }
+    const tarball = `https://api.github.com/repos/${m[1]}/${m[2].replace(/\.git$/, '')}/tarball`;
+    console.log(`→ 下载 ${m[1]}/${m[2]}（tarball）`);
+    const res = await fetch(tarball, { headers: { 'User-Agent': 'dsh-sticker-hub', Accept: 'application/vnd.github+json' } });
+    if (!res.ok) { console.error(`  下载失败：HTTP ${res.status}`); continue; }
+    const tgz = join(tmp, 'repo.tgz');
+    writeFileSync(tgz, Buffer.from(await res.arrayBuffer()));
+    const unpack = join(tmp, 'src');
+    mkdirSync(unpack, { recursive: true });
+    execFileSync('tar', ['-xzf', tgz, '-C', unpack], { stdio: 'inherit' }); // Windows 10+ 自带 tar
+    const top = readdirSync(unpack).map((n) => join(unpack, n)).find((p) => statSync(p).isDirectory());
+    if (!top) { console.error(`  解包失败：${s.id}`); continue; }
+    const from = s.subdir ? join(top, s.subdir) : top;
+    if (!existsSync(from)) { console.error(`  仓库里没有目录 ${s.subdir}`); continue; }
     const to = join(LIB, s.id);
     mkdirSync(to, { recursive: true });
     let n = 0;
