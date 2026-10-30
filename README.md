@@ -30,14 +30,14 @@ MIT · 纯 JS 无运行时依赖 · Node ≥ 20 · 在 Windows 11 + DSH 桌面�
 插件注册一条只读图片路由：
 
 ```text
-/sticker-hub/img?p=feed/xxx.gif      ← 相对地址，端口漂移也不怕
+/sticker-hub/img?p=feed/xxx.gif      ← 查询式
 /sticker-hub/img/feed/xxx.gif        ← 前缀式备胎
 ```
 
-`sticker_show` 工具就是拼这条地址返回 markdown（`![名字](/sticker-hub/img?p=…)`），聊天窗口里直接出图，不走 IM 的文件通道。
+`sticker_show` 会把地址拼成**同源绝对地址**再返回 markdown（`![名字](http://127.0.0.1:<端口>/sticker-hub/img?p=…)`），聊天窗口里直接出图，不走 IM 的文件通道。
 路由只接受回环地址（`127.0.0.1` / `::1`），路径锁死在图库目录内。
 
-实测：DSH 桌面版聊天窗能直接渲染（2026-10-30 验证）。要是某个前端版本过滤了相对地址，就换同源绝对地址；再不行只能走真正的上传通道。
+> 别在正文里手写 `/sticker-hub/img?p=…` 这种相对地址：前端会把它当成文件附件，显示成一个 md 文件链接而不是图。要绝对地址就用 `sticker_show`（它现读宿主端口，端口漂移也跟着变），或者给它传 `origin`。
 
 
 ---
@@ -113,9 +113,11 @@ dsh plugin --profile desktop add dsh-sticker-hub
 ```yaml
 sources:
   - id: my-source
+    name: 我的来源（人看的名字）
     repo: https://github.com/<owner>/<repo>
-    subdir: stickers        # 仓库里图片所在目录
+    subdir: stickers        # 仓库里图片所在目录；不填就不拉
     license: 见仓库 README  # 会原样写进入库条目
+    note: 备注（可选）
 ```
 
 ```bash
@@ -164,6 +166,7 @@ agent 会用 `sticker_learn` 调识图模型，自动补名字、情绪、标签
 | `sticker_learn` | 把一张图入库并打标 |
 | `sticker_battle` | 大战开 / 关 / 查状态 / 记一次「收到图」 |
 | `sticker_stats` | 库有多大、标签多密、大战开没开 |
+| `sticker_show` | 在 GUI 聊天窗里内联显示一张（返回 markdown 图，不走 IM 通道） |
 
 ### 5.2 表情包大战
 

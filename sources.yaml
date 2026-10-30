@@ -1,7 +1,7 @@
 # 图库来源清单 —— dsh-sticker-hub 自己不带任何图片，只记「去哪儿拿」。
 #
 # 用法：node bin/sticker-hub.mjs pull [id]
-#   · 填了 repo + subdir 才会真的去拉（git clone 到临时目录，再把图片复制进 library/<id>/）
+#   · 填了 repo + subdir 才会真的去拉（下载 GitHub tarball 解包，再把图片复制进 library/<id>/，不用装 git）
 #   · 只有 path 的条目表示「本地目录」，不下载
 #   · license 会原样写进入库条目，转载/分发前请自己回原仓库确认
 #
