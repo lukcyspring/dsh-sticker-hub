@@ -10,7 +10,57 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, readdirSync, statSync, copyFileSync } from 'node:fs';
 import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path';
 import { homedir } from 'node:os';
-import Schema from '@deepseek-ai/schemastery';
+// 宿主包：在 DSH 里由宿主提供；单独跑 `npm test` / 评审仓库时没有它，所以做成可选。
+// 有宿主就用真 schema；没有就退化成同形骨架（只影响独立运行，装进 DSH 一定会走真的）。
+let Schema;
+try {
+  Schema = (await import('@deepseek-ai/schemastery')).default;
+} catch {
+  Schema = makeStubSchema();
+}
+function makeStubSchema() {
+  const plain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const merge = (base, patch) => {
+    if (!plain(base) || !plain(patch)) return patch === undefined ? base : patch;
+    const out = { ...base };
+    for (const [k, v] of Object.entries(patch)) out[k] = merge(base[k], v);
+    return out;
+  };
+  const defaultsOf = (node) => {
+    if (node.type === 'object') {
+      const out = {};
+      for (const [k, sub] of Object.entries(node.shape || {})) {
+        const d = defaultsOf(sub);
+        if (d !== undefined) out[k] = d;
+      }
+      return merge(node._default ?? {}, out);
+    }
+    if (node.type === 'array') return node._default ?? [];
+    return node._default;
+  };
+  const chain = (type, extra = {}) => {
+    // 真 schemastery 的 Config 是可调用的（Config(input) → 补全默认值），骨架照抄这个形状。
+    const node = (input = {}) => merge(defaultsOf(node), input);
+    node.type = type;
+    node.shape = extra.shape;
+    node.inner = extra.inner;
+    node.description = (d) => (node._desc = d, node);
+    node.min = (v) => (node._min = v, node);
+    node.max = (v) => (node._max = v, node);
+    node.required = (v = true) => (node._req = v, node);
+    node.default = (v) => (node._default = v, node);
+    return node;
+  };
+  return {
+    any: () => chain('any'),
+    boolean: () => chain('boolean'),
+    string: () => chain('string'),
+    number: () => chain('number'),
+    array: (inner) => chain('array', { inner }),
+    object: (shape) => chain('object', { shape }),
+    union: (list) => chain('union', { list }),
+  };
+}
 
 export const name = 'sticker-hub';
 export const inject = ['tools', 'webServer'];

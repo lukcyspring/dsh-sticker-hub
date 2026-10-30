@@ -1,5 +1,15 @@
 # 更新记录
 
+## 0.1.1（2026-10-30）
+
+**修**
+- 干净检出（没有 `node_modules`）跑 `npm test` 会 `ERR_MODULE_NOT_FOUND`：`@deepseek-ai/schemastery` 改成可选导入，宿主没提供时退化成同形骨架，于是单独评审/测试也能跑
+- `docs/MARKER.md` 末尾多一个 `\r`，与仓库里其他文件行尾不一致
+
+**顺手**
+- `schemastery` 标为可选 peer 依赖（`peerDependenciesMeta.optional`）
+- smoke 测试不再把 PNG 二进制打到日志里
+
 ## 0.1.0（2026-10-30）首个公开版本
 
 **库**

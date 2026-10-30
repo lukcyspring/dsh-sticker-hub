@@ -1,6 +1,6 @@
 {
   "name": "dsh-sticker-hub",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Sticker (meme) library for DeepSeek Harness: local tagging, semantic search, inline images, and a sticker-battle mode for QQ / IM channels.",
   "license": "MIT",
@@ -58,6 +58,11 @@
   },
   "peerDependencies": {
     "@deepseek-ai/schemastery": ">=0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=20"

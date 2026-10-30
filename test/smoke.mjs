@@ -126,7 +126,7 @@ console.log('\n图片路由');
 const img = routes.find((r) => r.path === '/sticker-hub/img');
 const res = { statusCode: 200, headers: {}, setHeader(k, v) { this.headers[k] = v; }, end(b) { this.body = b; } };
 await img.handler({ url: '/sticker-hub/img?p=' + encodeURIComponent('demo/moyu.png'), method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, res);
-check(res.statusCode === 200 && res.body?.length > 0, `能取到图（${res.statusCode}，${res.body?.length} 字节：${String(res.body).slice(0, 60)}）`);
+check(res.statusCode === 200 && res.body?.length > 0, `能取到图（${res.statusCode}，${res.body?.length} 字节）`);
 
 const bad = { statusCode: 0, headers: {}, setHeader() {}, end() {} };
 await img.handler({ url: '/sticker-hub/img?p=' + encodeURIComponent('../../../etc/passwd'), method: 'GET', socket: { remoteAddress: '127.0.0.1' } }, bad);
