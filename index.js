@@ -450,7 +450,7 @@ function noteIncomingSticker(peerId, config) {
   if (rec.n >= Number(config?.streakThreshold ?? 3)) { battle.on = true; writeState({ battle: true }); }
   return battle.on;
 }
-function toggleBattle(on) { battle.on = on; writeState({ battle: on }); return battle.on; }
+function toggleBattle(on) { battle.on = on; battle.peers.clear(); writeState({ battle: on }); return battle.on; }
 
 // ── 发送 ──────────────────────────────────────────────────────────────
 async function sendSticker(ctx, config, filePath, target, exec) {

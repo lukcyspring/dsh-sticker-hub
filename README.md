@@ -42,6 +42,25 @@ MIT · 纯 JS 无运行时依赖 · Node ≥ 20 · 在 Windows 11 + DSH 桌面�
 
 ---
 
+### 0.2 仓库里的 `resources/`（表情包与标签数据）
+
+Git 仓库比 npm 包多一个 `resources/` 目录，给不想从零攒图的人：
+
+| 文件 | 内容 |
+| --- | --- |
+| `resources/feed/` | 18 张现成表情包（我们自己投喂的 + 从 dsh-pet 动作转的透明 GIF），22 MB |
+| `resources/index-all.md` | 680 张的标签表（名字 / 情绪 / 标签 / 什么时候用），人可读 |
+| `resources/_all.json` | 同上 JSON 版，脚本和插件读这个 |
+| `resources/sources.yaml` | 上游图库清单，`bin/sticker-hub.mjs pull` 用 |
+| `resources/ATTRIBUTION.md` | 每个分区的来源与许可（哪些能商用、哪些只能自己 pull） |
+
+**它不随 npm 包发布**（`files` 里没列），想用就 clone 仓库取。
+只有 `resources/feed/` 那 18 张随仓库分发；另外 662 张只留标签，图靠 `pull` 从上游拉——上游许可见 `ATTRIBUTION.md`，其中 nekowhale 那 322 张是 CC BY-NC 4.0，别商用。
+
+重新生成这个目录：`node tools/build-resources.mjs`（读 `../stickers`，可用 `STICKER_LIB` 覆盖）。
+
+---
+
 ## 1. 三个前提
 
 ### 1.1 DSH 装好并且能跑
@@ -177,6 +196,8 @@ agent 会用 `sticker_learn` 调识图模型，自动补名字、情绪、标签
 3. **连续发三张表情包**（默认阈值 3，可在设置页改）。
 
 进入之后：**只回图，不写字**。收到你的图 → 识图 → 在库里找最贴的那张 → 发回来。
+
+什么时候结束：**你一开始打字，这一局就算完了**——通道补丁看到文字就自动关战、连胜清零（触发词除外，那是要开不是要收）；也可以在设置页或 `sticker_battle` 里手动关。
 
 它怎么知道你在发图？通道插件会把下行图片存成本地文件并把路径交给 agent；agent 调 `sticker_learn`（可选入库）或 `sticker_search` + `sticker_send`。
 

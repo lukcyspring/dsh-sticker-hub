@@ -1,0 +1,35 @@
+# 图库来源清单 —— dsh-sticker-hub 自己不带任何图片，只记「去哪儿拿」。
+#
+# 用法：node bin/sticker-hub.mjs pull [id]
+#   · 填了 repo + subdir 才会真的去拉（下载 GitHub tarball 解包，再把图片复制进 library/<id>/，不用装 git）
+#   · 只有 path 的条目表示「本地目录」，不下载
+#   · license 会原样写进入库条目，转载/分发前请自己回原仓库确认
+#
+# ⚠️ 下面几条只是**示例**，不是推荐清单：表情包多是二次创作，版权在原画师手里。
+#    「自己存着用」和「打包分发」是两件事，后者先看对方 README。
+sources:
+  - id: dsh-meme
+    name: dsh-meme（鲸鱼娘四格 / 表情，MIT）
+    repo: https://github.com/yyh-001/dsh-meme
+    subdir: memes
+    license: MIT（代码与素材见仓库 README）
+    note: 24 张，按情绪分目录（angry / baka / color …）。
+
+  - id: deepseek-chan
+    name: deepseek-chan-meme-pack（预览图）
+    repo: https://github.com/the-beating-light-of-the-nail/deepseek-chan-meme-pack
+    subdir: previews
+    license: 仓库未声明许可 —— 只在本地看看，别整包转发
+    note: 20 张 webp 预览图；正片在作者发布的压缩包里。
+
+  - id: nekowhale
+    name: nekowhale stickers（蓝发女仆「大肥鱼」系，代码 MIT）
+    repo: https://github.com/Loping151/dsh-nekowhale-stickers
+    license: 代码 MIT；图片由作者插件按需下载，不在仓库内
+    note: 图片不在 git 仓库里（作者走自建镜像分发），所以没填 subdir、pull 会跳过。想用就装它、让它自己同步，或把图导出到这个目录。
+
+  - id: my-feed
+    name: 自己投喂的图（本地目录，不下载）
+    path: ./feed
+    license: 自己拥有 / 已获授权
+    note: 把图丢进 library/feed/ 再跑一次 `tag` 即可。
