@@ -1,5 +1,15 @@
 # 更新记录
 
+## 0.1.2（2026-10-30）
+
+**加**
+- `resources/`：18 张现成表情包（我们自己的投喂 + 从 dsh-pet 动作转的透明 GIF）+ 680 张的完整标签表（`index-all.md` / `_all.json`）+ `ATTRIBUTION.md` 逐来源许可说明
+- `tools/build-resources.mjs`：从本地图库重新生成 `resources/`（`STICKER_LIB` 可覆盖源目录）
+- 其余 662 张只留标签、图靠 `bin/sticker-hub.mjs pull` 从上游拉，其中 nekowhale 那 322 张是 CC BY-NC 4.0，不分发、不商用
+
+**注**
+- `resources/` 不进 npm 包（`files` 未列），只在 Git 仓库里
+
 ## 0.1.1（2026-10-30）
 
 **修**
