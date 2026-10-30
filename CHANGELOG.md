@@ -1,5 +1,17 @@
 # 更新记录
 
+## 0.1.3（2026-10-30）
+
+**改**
+- 图库改成**只有一个目录**：所有图都在 `gallery/`，不再按来源分子目录；`ingest`（`sticker_learn` / QQ 里收到新图）也统一落 `gallery/`
+- `pull` 拉下来的图按内容哈希（sha256）去重后落进 `library/gallery/`，同名冲突加来源前缀，不再建 `<id>/` 子目录
+- `resources/` 用同一策略重排：`resources/gallery/`（18 张）+ `index-all.md` + `_all.json`（每条带 `origin`）+ `tags-synonyms.json` + `sources.yaml` + `ATTRIBUTION.md`；旧 `resources/feed/` 删除
+- 标签表按内容去重：680 张 → **614 张**，重复的 66 张不再重复列；同义词归并后词表 4483 → **4202**（`tags-synonyms.json` 74 组）
+- `ATTRIBUTION.md` 按去重后的来源重算（ds 266 / 大肥鱼系 265 / 精选 65 / 投喂 18），并说明精选那批是用 SHA-256 逐字节反查确认来自前两套
+
+**修**
+- `bin/sticker-hub.mjs` 的 `pull` 漏 `createHash` 导入会在运行期 `createHash is not defined`
+
 ## 0.1.2（2026-10-30）
 
 **加**

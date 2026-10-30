@@ -44,18 +44,21 @@ MIT · 纯 JS 无运行时依赖 · Node ≥ 20 · 在 Windows 11 + DSH 桌面�
 
 ### 0.2 仓库里的 `resources/`（表情包与标签数据）
 
-Git 仓库比 npm 包多一个 `resources/` 目录，给不想从零攒图的人：
+Git 仓库比 npm 包多一个 `resources/` 目录，给不想从零攒图的人。**结构和图库一样：图在一个目录里，索引只有一份。**
 
 | 文件 | 内容 |
 | --- | --- |
-| `resources/feed/` | 18 张现成表情包（我们自己投喂的 + 从 dsh-pet 动作转的透明 GIF），22 MB |
-| `resources/index-all.md` | 680 张的标签表（名字 / 情绪 / 标签 / 什么时候用），人可读 |
-| `resources/_all.json` | 同上 JSON 版，脚本和插件读这个 |
+| `resources/gallery/` | 18 张现成表情包（我们自己投喂的 + 从 dsh-pet 动作转的透明 GIF），22 MB |
+| `resources/index-all.md` | 614 张（已去重）的标签表：文件 / 名字 / 情绪 / 标签 / 什么时候发，人可读 |
+| `resources/_all.json` | 同上 JSON 版，每条多带 `origin`（合并前的路径），脚本和插件读这个 |
+| `resources/tags-synonyms.json` | 标签同义词表，74 组，「女仆装 / 女仆 / 女仆头饰」这类合成一个词 |
 | `resources/sources.yaml` | 上游图库清单，`bin/sticker-hub.mjs pull` 用 |
-| `resources/ATTRIBUTION.md` | 每个分区的来源与许可（哪些能商用、哪些只能自己 pull） |
+| `resources/ATTRIBUTION.md` | 每个来源的许可（哪些能商用、哪些只能自己 pull） |
 
 **它不随 npm 包发布**（`files` 里没列），想用就 clone 仓库取。
-只有 `resources/feed/` 那 18 张随仓库分发；另外 662 张只留标签，图靠 `pull` 从上游拉——上游许可见 `ATTRIBUTION.md`，其中 nekowhale 那 322 张是 CC BY-NC 4.0，别商用。
+只有 `resources/gallery/` 那 18 张随仓库分发；另外 596 张只留标签，图靠 `pull` 从上游拉——上游许可见 `ATTRIBUTION.md`，其中大肥鱼系 265 张是 CC BY-NC 4.0，别商用。
+
+图库只有一层：`library/gallery/`。`pull` 拉下来的图也按内容哈希去重后落进这个目录，不分子目录。
 
 重新生成这个目录：`node tools/build-resources.mjs`（读 `../stickers`，可用 `STICKER_LIB` 覆盖）。
 
@@ -148,9 +151,9 @@ node bin/sticker-hub.mjs stats           # 看看有多少张
 `pull` 走 GitHub 的 tarball（`api.github.com/repos/<owner>/<repo>/tarball`），**不用装 git**；解包用系统自带的 `tar`。
 `subdir` 没填的条目不拉（图不在仓库里，比如 nekowhale 走自建镜像分发）。
 
-图片落在 `~/.dsh/sticker-hub/library/<id>/`，索引是同目录的 `index-all.md`。
+图片落在 `~/.dsh/sticker-hub/library/gallery/`（只有这一层，按内容哈希去重），索引是 `library/index-all.md`。
 
-**自己的图**：直接丢进 `library/feed/`，再跑一次打标即可。
+**自己的图**：丢进 `library/gallery/`，再跑一次打标即可；在 QQ 里直接发给它，`sticker_learn` 也会自动入库。
 
 ---
 

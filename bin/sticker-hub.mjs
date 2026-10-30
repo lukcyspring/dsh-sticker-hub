@@ -10,6 +10,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, copyFileSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { join, resolve, extname, basename } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -83,14 +84,23 @@ async function pull(src) {
     if (!top) { console.error(`  解包失败：${s.id}`); continue; }
     const from = s.subdir ? join(top, s.subdir) : top;
     if (!existsSync(from)) { console.error(`  仓库里没有目录 ${s.subdir}`); continue; }
-    const to = join(LIB, s.id);
+    // 统一落到 library/gallery/ 一个目录：按内容哈希去重，重名加来源前缀
+    const to = join(LIB, 'gallery');
     mkdirSync(to, { recursive: true });
+    const seen = new Map();
+    for (const f of listImages(to)) seen.set(hashOf(f), basename(f));
     let n = 0;
+    let dup = 0;
     for (const f of listImages(from)) {
-      copyFileSync(f, join(to, basename(f)));
+      const h = hashOf(f);
+      if (seen.has(h)) { dup++; continue; }
+      let base = basename(f);
+      if (existsSync(join(to, base))) base = `${s.id}-${base}`;
+      copyFileSync(f, join(to, base));
+      seen.set(h, base);
       n++;
     }
-    console.log(`  ${s.id}: 复制 ${n} 张 → ${to}`);
+    console.log(`  ${s.id}: 复制 ${n} 张${dup ? `（跳过重复 ${dup}）` : ''} → ${to}`);
   }
 }
 
@@ -134,6 +144,7 @@ function stats() {
 }
 
 function safeRead(p) { try { return readFileSync(p, 'utf8'); } catch { return ''; } }
+function hashOf(p) { return createHash('sha256').update(readFileSync(p)).digest('hex'); }
 
 const { cmd, rest, flags } = args();
 mkdirSync(LIB, { recursive: true });

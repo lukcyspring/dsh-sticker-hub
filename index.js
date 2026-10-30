@@ -418,13 +418,15 @@ function ingest(config, imagePath, extra = {}) {
   const abs = expandHome(imagePath);
   if (!existsSync(abs)) throw new Error(`文件不存在：${abs}`);
   const dir = libraryDir(config);
-  const packDir = join(dir, 'feed');
+  // 2026-10-30 起整库收进 gallery/ 一个目录；没有 gallery 才退回老的 feed/
+  const packName = existsSync(join(dir, 'gallery')) ? 'gallery' : 'feed';
+  const packDir = join(dir, packName);
   ensureDir(packDir);
   const base = extra.name ? safeName(extra.name) + extname(abs).toLowerCase() : `${Date.now()}${extname(abs).toLowerCase()}`;
   const dest = join(packDir, base);
   if (resolve(abs) !== resolve(dest)) copyFileSync(abs, dest);
   const entry = {
-    path: `feed/${base}`,
+    path: `${packName}/${base}`,
     file: base,
     name: extra.name || base,
     emotion: extra.emotion || '',
