@@ -1,0 +1,24 @@
+# 图库来源清单 —— dsh-sticker-hub 自己不带任何图片，只记「去哪儿拿」。
+# `npx dsh-sticker-hub pull <id>` 会按这里的定义下载并解压到 library/<id>/。
+# 想加自己的图库：照着格式加一条，repo 填 git 地址，subdir 填仓库里图片所在目录，
+# license 写清楚（会原样写进入库条目的 sources 字段）。
+sources:
+  - id: nekowhale
+    name: nekowhale stickers（蓝发女仆「大肥鱼」系）
+    repo: https://github.com/Loping151/dsh-nekowhale-stickers
+    subdir: stickers
+    license: 见仓库 README（作者原创 / 部分二次创作，仅供个人使用）
+    note: 322 张，Q 版日常表情，标签密度高。
+
+  - id: deepseek-whale
+    name: deepseek 鲸鱼表情包（社区整理）
+    repo: https://github.com/TreapGoGo/deepseek-whale-girl
+    subdir: stickers
+    license: MIT（仓库声明）
+    note: 271 张，DeepSeek 鲸鱼娘梗图。
+
+  - id: my-feed
+    name: 自己投喂的图（本地目录，不下载）
+    path: ./feed
+    license: 自己拥有 / 已获授权
+    note: 把图丢进 library/feed/ 再跑一次 `tag` 即可。

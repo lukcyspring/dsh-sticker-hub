@@ -1,0 +1,5 @@
+# Bundle patch: register dsh-sticker-hub into the plugin tree.
+# name must stay the bare package name so the web host can read `dsh.client`.
+- insert:
+    - id: sticker-hub
+      name: dsh-sticker-hub
