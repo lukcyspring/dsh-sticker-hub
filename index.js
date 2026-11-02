@@ -561,7 +561,12 @@ function registerTools(ctx, config, logger) {
         }
         bumpUsage(rel);
         const r = await sendSticker(ctx, cfg, absPath(cfg, rel), args.target, exec);
-        return { sent: r.sent, name: name || rel.split('/').pop(), path: rel, via: r.via, reason: r.reason };
+        // 别把 undefined 放进返回值：宿主用「JSON 往返是否一致」校验输出，
+        // {reason: undefined} 会被 stringify 丢掉，判成 invalid output: value is not lossless JSON
+        const out = { sent: r.sent, name: name || rel.split('/').pop(), path: rel };
+        if (r.via) out.via = r.via;
+        if (r.reason) out.reason = r.reason;
+        return out;
       },
     },
     {

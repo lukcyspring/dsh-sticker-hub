@@ -101,6 +101,11 @@ const byFile = await call('sticker_send', { path: 'wuyu.png' });
 check(byFile.path === 'demo/wuyu.png', `sticker_send 认裸文件名（实际 ${byFile.path}）`);
 const byName = await call('sticker_send', { path: '摸鱼鱼' });
 check(byName.path === 'demo/moyu.png', `sticker_send 认名字（实际 ${byName.path}）`);
+// 返回值里不能有 undefined：宿主要求输出是 lossless JSON，undefined 一往返就丢键
+check(
+  JSON.stringify(byName) === JSON.stringify(JSON.parse(JSON.stringify(byName))) && Object.values(byName).every((v) => v !== undefined),
+  'sticker_send 返回值可 JSON 往返（没有 undefined 键）',
+);
 let missing = '';
 try { await call('sticker_send', { path: '根本没有这一张' }); } catch (e) { missing = e.message; }
 check(/图库里没有/.test(missing) && /sticker_search/.test(missing), `找不到时给出可操作的提示（${missing.slice(0, 40)}…）`);
