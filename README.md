@@ -30,8 +30,8 @@ MIT · 纯 JS 无运行时依赖 · Node ≥ 20 · 在 Windows 11 + DSH 桌面�
 插件注册一条只读图片路由：
 
 ```text
-/sticker-hub/img?p=feed/xxx.gif      ← 查询式
-/sticker-hub/img/feed/xxx.gif        ← 前缀式备胎
+/sticker-hub/img?p=gallery/xxx.gif   ← 查询式
+/sticker-hub/img/gallery/xxx.gif     ← 前缀式备胎
 ```
 
 `sticker_show` 会把地址拼成**同源绝对地址**再返回 markdown（`![名字](http://127.0.0.1:<端口>/sticker-hub/img?p=…)`），聊天窗口里直接出图，不走 IM 的文件通道。

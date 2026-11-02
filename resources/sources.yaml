@@ -28,8 +28,8 @@ sources:
     license: 代码 MIT；图片由作者插件按需下载，不在仓库内
     note: 图片不在 git 仓库里（作者走自建镜像分发），所以没填 subdir、pull 会跳过。想用就装它、让它自己同步，或把图导出到这个目录。
 
-  - id: my-feed
+  - id: my-gallery
     name: 自己投喂的图（本地目录，不下载）
-    path: ./feed
+    path: ./gallery
     license: 自己拥有 / 已获授权
-    note: 把图丢进 library/feed/ 再跑一次 `tag` 即可。
+    note: 把图丢进 library/gallery/ 再跑一次 `tag` 即可（或用 sticker_learn 直接入库）。

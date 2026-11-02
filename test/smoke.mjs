@@ -96,6 +96,15 @@ console.log('\n发送与其他工具');
 const sent = await call('sticker_send', { query: '摸鱼' });
 check(typeof sent.path === 'string' && sent.path.includes('/'), `sticker_send 返回路径（${sent.path}）`);
 
+// 裸文件名 / 名字都能认（0.1.4 起不再逼着写全相对路径）
+const byFile = await call('sticker_send', { path: 'wuyu.png' });
+check(byFile.path === 'demo/wuyu.png', `sticker_send 认裸文件名（实际 ${byFile.path}）`);
+const byName = await call('sticker_send', { path: '摸鱼鱼' });
+check(byName.path === 'demo/moyu.png', `sticker_send 认名字（实际 ${byName.path}）`);
+let missing = '';
+try { await call('sticker_send', { path: '根本没有这一张' }); } catch (e) { missing = e.message; }
+check(/图库里没有/.test(missing) && /sticker_search/.test(missing), `找不到时给出可操作的提示（${missing.slice(0, 40)}…）`);
+
 const stats = await call('sticker_stats', {});
 check(stats.total === 2, `sticker_stats 数到 2 张（实际 ${stats.total}）`);
 

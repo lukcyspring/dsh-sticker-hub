@@ -550,9 +550,17 @@ function registerTools(ctx, config, logger) {
           rel = hit.path; name = hit.name;
         }
         const abs = absPath(cfg, rel);
-        if (!existsSync(abs)) throw new Error(`sticker_send: 文件不存在 ${abs}`);
+        if (!existsSync(abs)) {
+          // 2026-11-02：允许传名字 / 裸文件名（别逼着带 gallery/ 前缀）
+          const alt = pickSticker(cfg, rel);
+          if (alt && existsSync(alt.abs)) {
+            rel = alt.path; name = alt.name || name;
+          } else {
+            throw new Error(`sticker_send: 图库里没有 ${rel}（可以是名字、文件名或 gallery/xxx.gif 这样的相对路径；用 sticker_search 先找）`);
+          }
+        }
         bumpUsage(rel);
-        const r = await sendSticker(ctx, cfg, abs, args.target, exec);
+        const r = await sendSticker(ctx, cfg, absPath(cfg, rel), args.target, exec);
         return { sent: r.sent, name: name || rel.split('/').pop(), path: rel, via: r.via, reason: r.reason };
       },
     },
