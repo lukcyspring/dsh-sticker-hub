@@ -1,5 +1,10 @@
 # 更新记录
 
+## 0.1.8（2026-11-02）
+
+**修**
+- `sticker_learn` 返回值只保留 schema 里声明的 `path`/`name`/`tags`。之前把 `ingest()` 的条目整份返回，多带了 `file`/`emotion`/`when`，宿主按 `additionalProperties: false` 判成 `invalid output`——图其实已经入库，但调用方只看到报错。和 0.1.4 修的 `sticker_send` 是同一类毛病。
+
 ## 0.1.7（2026-11-02）
 
 **改（回退到「最早能用的玩法」）**

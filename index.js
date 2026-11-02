@@ -663,7 +663,9 @@ function registerTools(ctx, config, logger) {
             meta = { name: args.name || seen.name, emotion: args.emotion || seen.emotion, tags: seen.tags, when: args.when || seen.when };
           } catch (e) { logger.warn(`sticker-hub: 自动打标失败 ${e instanceof Error ? e.message : String(e)}`); }
         }
-        return ingest(cfg, args.image_path, meta);
+        // 只回 schema 里声明的字段（ingest 的 entry 还带 file/emotion/when，多出来会被宿主判 invalid output）
+        const entry = ingest(cfg, args.image_path, meta);
+        return { path: entry.path, name: entry.name, tags: entry.tags || [] };
       },
     },
     {
