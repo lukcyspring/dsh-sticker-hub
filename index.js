@@ -470,31 +470,57 @@ function defaultTarget() {
   }
 }
 
+/** 发图链路的诊断日志（0.1.6 加）：写 ~/.dsh/sticker-hub/send-debug.log */
+function sendLog(obj) {
+  try {
+    const dir = join(homedir(), '.dsh', 'sticker-hub');
+    mkdirSync(dir, { recursive: true });
+    appendFileSync(join(dir, 'send-debug.log'), JSON.stringify({ t: new Date().toISOString(), ...obj }) + '\n');
+  } catch { /* 日志失败不影响发送 */ }
+}
+
 async function sendSticker(ctx, config, filePath, target, exec) {
   // 2026-11-02：优先走 QQBot 实例直发（和表情包标记补丁同一条路）。
   // tools.execute 在 bridged exec 里没有会话上下文，不带 target 时会「成功但什么也没发」。
   const bot = globalThis.__qqBot;
+  const base = filePath.split(/[\\/]/).pop();
+  sendLog({
+    ev: 'start', file: base, target: target ?? null, hasBot: !!bot,
+    botName: bot && bot.constructor ? bot.constructor.name : null,
+    methods: bot ? ['sendImage', 'sendFile', 'sendText', 'sendMarkdown'].filter((k) => typeof bot[k] === 'function') : [],
+  });
+  let lastErr;
   if (target && bot) {
     for (const fn of ['sendImage', 'sendFile']) {
       if (typeof bot[fn] !== 'function') continue;
       try {
-        await bot[fn](target, { localPath: filePath });
+        const r = await bot[fn](target, { localPath: filePath });
+        sendLog({ ev: 'bot-ok', fn, result: r === undefined ? null : r });
         return { sent: true, via: `qqBot.${fn}` };
       } catch (e) {
         // 换下一条路，别在这儿直接放弃
-        var lastErr = e instanceof Error ? e.message : String(e);
+        lastErr = e instanceof Error ? e.message : String(e);
+        sendLog({ ev: 'bot-fail', fn, err: lastErr });
       }
     }
   }
   const tools = ctx.get?.('tools') ?? ctx.tools;
   const toolName = (config?.sendFileTool || '').trim();
+  sendLog({ ev: 'tools-probe', hasTools: !!tools, toolName, keys: tools ? Object.keys(tools).slice(0, 12) : [] });
   if (!toolName || !tools) return { sent: false, path: filePath, reason: lastErr || '没有可用的发文件工具' };
   const args = { file_path: filePath };
   if (target) args.target = target;
   for (const fn of ['execute', 'invoke', 'call', 'run']) {
     if (typeof tools[fn] === 'function') {
-      try { return { sent: true, via: `${fn}(${toolName})`, result: await tools[fn](toolName, args, exec) }; }
-      catch (e) { return { sent: false, path: filePath, reason: `${fn} 失败：${e instanceof Error ? e.message : String(e)}` }; }
+      try {
+        const result = await tools[fn](toolName, args, exec);
+        sendLog({ ev: 'tool-ok', fn, result: result === undefined ? null : result });
+        return { sent: true, via: `${fn}(${toolName})`, result };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        sendLog({ ev: 'tool-fail', fn, err: msg });
+        return { sent: false, path: filePath, reason: `${fn} 失败：${msg}` };
+      }
     }
   }
   return { sent: false, path: filePath, reason: 'tools 服务没有可调用方法，请先让模型调用 ' + toolName };
