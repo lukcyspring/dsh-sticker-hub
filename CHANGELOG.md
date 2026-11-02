@@ -1,5 +1,11 @@
 # 更新记录
 
+## 0.1.5（2026-11-02）
+
+**修**
+- `sticker_send` 假成功：走 `tools.execute('qqbot_send_file')` 时不带会话 target，宿主在 bridged exec 里没有会话上下文，于是「返回成功但什么也没发」，日志还显示 `已发 X`。现在优先用 `globalThis.__qqBot.sendImage/sendFile(target, {localPath})` 直发（和表情包标记补丁同一条路），并且没显式 `target` 时从 `~/.dsh/sticker-hub/peer-map.json` 取最近一次 QQ 会话；两条都不行才退回 `tools` 通道。
+- 底层工具失败时不再谎报 `已发`：`sendImage`/`sendFile` 抛错会带着原因落到 `未发出：…`。
+
 ## 0.1.4（2026-11-02）
 
 **改**

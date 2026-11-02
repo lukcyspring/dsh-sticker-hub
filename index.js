@@ -455,10 +455,40 @@ function noteIncomingSticker(peerId, config) {
 function toggleBattle(on) { battle.on = on; battle.peers.clear(); writeState({ battle: on }); return battle.on; }
 
 // ── 发送 ──────────────────────────────────────────────────────────────
+/** 没显式给 target 时，从 QQ 补丁写的 peer-map 里取最近一次会话（c2c:<openid>） */
+function defaultTarget() {
+  try {
+    const p = join(homedir(), '.dsh', 'sticker-hub', 'peer-map.json');
+    if (!existsSync(p)) return undefined;
+    const map = JSON.parse(readFileSync(p, 'utf8'));
+    const vals = Object.values(map ?? {}).filter((v) => v && v.targetId);
+    if (vals.length === 0) return undefined;
+    const v = vals[vals.length - 1];
+    return v.scope ? `${v.scope}:${v.targetId}` : String(v.targetId);
+  } catch {
+    return undefined;
+  }
+}
+
 async function sendSticker(ctx, config, filePath, target, exec) {
+  // 2026-11-02：优先走 QQBot 实例直发（和表情包标记补丁同一条路）。
+  // tools.execute 在 bridged exec 里没有会话上下文，不带 target 时会「成功但什么也没发」。
+  const bot = globalThis.__qqBot;
+  if (target && bot) {
+    for (const fn of ['sendImage', 'sendFile']) {
+      if (typeof bot[fn] !== 'function') continue;
+      try {
+        await bot[fn](target, { localPath: filePath });
+        return { sent: true, via: `qqBot.${fn}` };
+      } catch (e) {
+        // 换下一条路，别在这儿直接放弃
+        var lastErr = e instanceof Error ? e.message : String(e);
+      }
+    }
+  }
   const tools = ctx.get?.('tools') ?? ctx.tools;
   const toolName = (config?.sendFileTool || '').trim();
-  if (!toolName || !tools) return { sent: false, path: filePath, reason: '没有可用的发文件工具' };
+  if (!toolName || !tools) return { sent: false, path: filePath, reason: lastErr || '没有可用的发文件工具' };
   const args = { file_path: filePath };
   if (target) args.target = target;
   for (const fn of ['execute', 'invoke', 'call', 'run']) {
@@ -560,7 +590,9 @@ function registerTools(ctx, config, logger) {
           }
         }
         bumpUsage(rel);
-        const r = await sendSticker(ctx, cfg, absPath(cfg, rel), args.target, exec);
+        // 没显式 target 时用 peer-map 里最近一次 QQ 会话；没有就交给下层工具自己判断
+        const target = args.target || defaultTarget();
+        const r = await sendSticker(ctx, cfg, absPath(cfg, rel), target, exec);
         // 别把 undefined 放进返回值：宿主用「JSON 往返是否一致」校验输出，
         // {reason: undefined} 会被 stringify 丢掉，判成 invalid output: value is not lossless JSON
         const out = { sent: r.sent, name: name || rel.split('/').pop(), path: rel };
