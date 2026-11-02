@@ -73,7 +73,7 @@ export const Config = Schema.object({
   battle: Schema.boolean().default(false).description('表情包大战默认开启（也可在设置页或聊天里切换）'),
   triggerWords: Schema.array(Schema.string()).default(['表情包的大战', '表情包大战', '开战']).description('触发表情包大战的文字'),
   streakThreshold: Schema.number().default(3).description('连续收到几张表情包后自动进入大战'),
-  sendFileTool: Schema.string().default('qqbot_send_file').description('负责发文件的工具名（留空则只回路径）'),
+  sendFileTool: Schema.string().default('').description('【默认留空＝只挑图、只回路径，由模型自己调发文件工具】填工具名可以让插件自己发，但 bridged 环境下会谎报成功（见 CHANGELOG 0.1.7）'),
   vision: Schema.object({
     enabled: Schema.boolean().default(true).description('用识图模型给新图自动打标'),
     baseUrl: Schema.string().default('https://api.openai.com').description('OpenAI 兼容 base（不带 /v1）'),
@@ -573,7 +573,7 @@ function registerTools(ctx, config, logger) {
     },
     {
       name: 'sticker_send',
-      description: 'Send one sticker to the current conversation. Pass `query` (recommended) to auto-pick, or `path` for an exact file. Does not send any text.',
+      description: 'Pick one sticker. Pass `query` (recommended) to auto-pick, or `path` for an exact file. By default it only returns the path — send that file with your own file-send tool (e.g. qqbot_send_file). Sends by itself only if config.sendFileTool is set. Does not send any text.',
       parameters: {
         type: 'object',
         properties: {
@@ -593,7 +593,11 @@ function registerTools(ctx, config, logger) {
           },
           required: ['sent', 'path'], additionalProperties: false,
         },
-        render: (_a, v) => textBlock(v.sent ? `已发 ${v.name || v.path}` : `未发出：${v.reason || v.path}`),
+        // 2026-11-02 回退：默认只挑图。插件内部代发在 bridged 环境里拿不到会话上下文，
+        // 会谎报成功；挑好后由模型自己调发文件工具（那条路验过是能到的）。
+        render: (_a, v) => textBlock(v.sent
+          ? `已发 ${v.name || v.path}`
+          : (v.path ? `挑好了 ${v.name || v.path}` : `未发出：${v.reason || ''}`)),
       },
       async execute(args, exec) {
         const cfg = { ...config, ...readState() };

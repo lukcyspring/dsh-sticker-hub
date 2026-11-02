@@ -184,7 +184,7 @@ agent 会用 `sticker_learn` 调识图模型，自动补名字、情绪、标签
 | 工具 | 干什么 |
 | --- | --- |
 | `sticker_search` | 按意思找候选，返回名字/情绪/标签/什么时候用 |
-| `sticker_send` | 发一张（`query` 自动挑、或 `path` 指定） |
+| `sticker_send` | 挑一张（`query` 自动挑、或 `path` 指定）；默认只回路径，由调用方自己用发文件工具发 |
 | `sticker_learn` | 把一张图入库并打标 |
 | `sticker_battle` | 大战开 / 关 / 查状态 / 记一次「收到图」 |
 | `sticker_stats` | 库有多大、标签多密、大战开没开 |

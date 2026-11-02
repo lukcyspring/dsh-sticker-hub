@@ -1,5 +1,21 @@
 # 更新记录
 
+## 0.1.7（2026-11-02）
+
+**改（回退到「最早能用的玩法」）**
+- `sticker_send` 默认**只挑图**：返回图的名字 + 相对路径，由调用方自己用发文件工具发（`qqbot_send_file` 这种带会话上下文的调用）。理由：插件内部代发走 `tools.execute`，在 bridged exec 里拿不到会话上下文，会「返回成功但什么也没发」，之前还把它渲染成 `已发 X`，属于谎报。
+- `sendFileTool` 默认从 `qqbot_send_file` 改成空串；填了才尝试自己发（成功率取决于宿主，不建议）。
+- 渲染口径：发出去了显示 `已发 X`，只挑图显示 `挑好了 X`，失败显示 `未发出：原因`。
+- 留 `~/.dsh/sticker-hub/send-debug.log` 诊断（`start`/`bot-ok`/`bot-fail`/`tools-probe`/`tool-ok`/`tool-fail`）。
+
+**说明**
+- 这条路径从 0.1.0 初始提交起就没改过（`git log -S "async function sendSticker"` 只有 `821418e` 一处），跟后来借鉴别的表情包项目**无关**；「最早能用」的是模型自己调发文件工具那条路。
+
+## 0.1.6（2026-11-02）
+
+**加**
+- `sticker_send` 写 `~/.dsh/sticker-hub/send-debug.log`：记 `hasBot`/`botName`/可用方法、每条发送路径的返回值与错误。
+
 ## 0.1.5（2026-11-02）
 
 **修**
