@@ -595,9 +595,11 @@ function registerTools(ctx, config, logger) {
         },
         // 2026-11-02 回退：默认只挑图。插件内部代发在 bridged 环境里拿不到会话上下文，
         // 会谎报成功；挑好后由模型自己调发文件工具（那条路验过是能到的）。
+        // 2026-11-04：挑好的时候必须把真实路径吐出来——模型下一步要拿它调发文件工具，
+        // 只给名字它还得自己拼目录（还可能猜错 gallery 子目录）。
         render: (_a, v) => textBlock(v.sent
           ? `已发 ${v.name || v.path}`
-          : (v.path ? `挑好了 ${v.name || v.path}` : `未发出：${v.reason || ''}`)),
+          : (v.path ? `挑好了 ${v.name || v.path}｜path=${v.path}` : `未发出：${v.reason || ''}`)),
       },
       async execute(args, exec) {
         const cfg = { ...config, ...readState() };
